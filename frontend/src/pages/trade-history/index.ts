@@ -1,0 +1,1 @@
+export { default as TradeHistoryPage } from './ui/trade-history.vue'

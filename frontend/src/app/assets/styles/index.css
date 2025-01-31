@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+html {
+    background-color: #22232A;
+}
+
+body {
+    font-family: "NotoSansJP", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+@font-face {
+    font-family: "NotoSansJP";
+    font-style: normal;
+    font-weight: 400;
+    src: local(""),
+    url("assets/fonts/NotoSansJP-VariableFont_wght.ttf");
+}
+
+#app {
+    height: 100vh;
+}

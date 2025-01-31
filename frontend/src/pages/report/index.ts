@@ -1,0 +1,1 @@
+export { default as ReportPage } from './ui/report-page.vue'
