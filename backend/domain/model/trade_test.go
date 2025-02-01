@@ -15,12 +15,14 @@ func TestTrade(t *testing.T) {
 
 	t.Run("new trade", func(t *testing.T) {
 		tests := map[string]struct {
+			symbol      model.Symbol
 			higherRates model.Rates
 			lowerRates  model.Rates
 			expected    *model.Trade
 			expectedErr error
 		}{
 			"returns *model.Trade on success": {
+				symbol: model.BTCUSD,
 				higherRates: model.Rates{
 					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 102.1},
 					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 0), Price: 103.0},
@@ -32,6 +34,7 @@ func TestTrade(t *testing.T) {
 					{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
 				},
 				expected: &model.Trade{
+					Symbol: model.BTCUSD,
 					HigherTimeFrameRates: model.Rates{
 						{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 102.1},
 						{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 0), Price: 103.0},
@@ -46,6 +49,7 @@ func TestTrade(t *testing.T) {
 				expectedErr: nil,
 			},
 			"returns error when higher timeframe rates is empty": {
+				symbol:      model.BTCUSD,
 				higherRates: model.Rates{},
 				lowerRates: model.Rates{
 					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 50), Price: 102.3},
@@ -56,6 +60,7 @@ func TestTrade(t *testing.T) {
 				expectedErr: errors.New("higher timeframe rates cannot be empty"),
 			},
 			"returns error when lower timeframe rates is empty": {
+				symbol: model.BTCUSD,
 				higherRates: model.Rates{
 					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 102.1},
 					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 0), Price: 103.0},
@@ -69,7 +74,7 @@ func TestTrade(t *testing.T) {
 
 		for name, tt := range tests {
 			t.Run(name, func(t *testing.T) {
-				actual, err := model.NewTrade(tt.higherRates, tt.lowerRates)
+				actual, err := model.NewTrade(tt.symbol, tt.higherRates, tt.lowerRates)
 
 				assert.Equal(t, tt.expected, actual)
 				if tt.expectedErr != nil {

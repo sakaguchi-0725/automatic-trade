@@ -5,21 +5,15 @@ import (
 	"math"
 )
 
-type TradeSide string
-
-const (
-	Sell TradeSide = "sell"
-	Buy  TradeSide = "buy"
-)
-
 type Trade struct {
+	Symbol               Symbol
 	Side                 TradeSide
 	HigherTimeFrameRates Rates
 	LowerTimeFrameRates  Rates
 	Quantity             float64
 }
 
-func NewTrade(higherTimeFrameRates, lowerTimeFrameRates Rates) (*Trade, error) {
+func NewTrade(symbol Symbol, higherTimeFrameRates, lowerTimeFrameRates Rates) (*Trade, error) {
 	if len(higherTimeFrameRates) == 0 {
 		return nil, errors.New("higher timeframe rates cannot be empty")
 	}
@@ -28,6 +22,7 @@ func NewTrade(higherTimeFrameRates, lowerTimeFrameRates Rates) (*Trade, error) {
 	}
 
 	return &Trade{
+		Symbol:               symbol,
 		HigherTimeFrameRates: higherTimeFrameRates,
 		LowerTimeFrameRates:  lowerTimeFrameRates,
 	}, nil
@@ -63,6 +58,16 @@ func (trade *Trade) CalculateQuantity(totalWallet float64) error {
 	trade.Quantity = truncateToOneDecimal(totalWallet * 0.1)
 
 	return nil
+}
+
+func (trade *Trade) MakePosition(price float64) Position {
+	return Position{
+		Symbol:      trade.Symbol,
+		Side:        trade.Side,
+		Price:       price,
+		OrderStatus: Open,
+		Quantity:    trade.Quantity,
+	}
 }
 
 func truncateToOneDecimal(value float64) float64 {
