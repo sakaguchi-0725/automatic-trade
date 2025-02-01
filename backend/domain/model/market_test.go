@@ -21,11 +21,11 @@ func TestRate(t *testing.T) {
 		}{
 			"returns model.Rate on success": {
 				rates: model.Rates{
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 10.5},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 5), Price: 10.8},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 10), Price: 10.6},
+					{DateTime: timeFactory.At(10, 0), Price: 10.5},
+					{DateTime: timeFactory.At(10, 5), Price: 10.8},
+					{DateTime: timeFactory.At(10, 10), Price: 10.6},
 				},
-				expected:    model.Rate{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 10), Price: 10.6},
+				expected:    model.Rate{DateTime: timeFactory.At(10, 10), Price: 10.6},
 				expectedErr: nil,
 			},
 			"returns error when rates is empty": {
