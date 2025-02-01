@@ -5,8 +5,12 @@ import (
 	"time"
 )
 
+type Market struct {
+	Symbol Symbol
+	Rates  Rates
+}
+
 type Rate struct {
-	Symbol   Symbol
 	DateTime time.Time
 	Price    float64
 }

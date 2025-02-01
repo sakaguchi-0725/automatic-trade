@@ -15,58 +15,87 @@ func TestTrade(t *testing.T) {
 
 	t.Run("new trade", func(t *testing.T) {
 		tests := map[string]struct {
-			symbol      model.Symbol
-			higherRates model.Rates
-			lowerRates  model.Rates
+			higher      model.Market
+			lower       model.Market
 			expected    *model.Trade
 			expectedErr error
 		}{
 			"returns *model.Trade on success": {
-				symbol: model.BTCUSD,
-				higherRates: model.Rates{
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 102.1},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 0), Price: 103.0},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+				higher: model.Market{
+					Symbol: model.BTCUSD,
+					Rates: model.Rates{
+						{DateTime: timeFactory.At(10, 0), Price: 102.1},
+						{DateTime: timeFactory.At(11, 0), Price: 103.0},
+						{DateTime: timeFactory.At(12, 0), Price: 102.8},
+					},
 				},
-				lowerRates: model.Rates{
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 50), Price: 102.3},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 55), Price: 102.5},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+				lower: model.Market{
+					Symbol: model.BTCUSD,
+					Rates: model.Rates{
+						{DateTime: timeFactory.At(11, 50), Price: 102.3},
+						{DateTime: timeFactory.At(11, 55), Price: 102.5},
+						{DateTime: timeFactory.At(12, 0), Price: 102.8},
+					},
 				},
 				expected: &model.Trade{
-					Symbol: model.BTCUSD,
-					HigherTimeFrameRates: model.Rates{
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 102.1},
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 0), Price: 103.0},
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+					HigherTimeFrame: model.Market{
+						Symbol: model.BTCUSD,
+						Rates: model.Rates{
+							{DateTime: timeFactory.At(10, 0), Price: 102.1},
+							{DateTime: timeFactory.At(11, 0), Price: 103.0},
+							{DateTime: timeFactory.At(12, 0), Price: 102.8},
+						},
 					},
-					LowerTimeFrameRates: model.Rates{
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 50), Price: 102.3},
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 55), Price: 102.5},
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+					LowerTimeFrame: model.Market{
+						Symbol: model.BTCUSD,
+						Rates: model.Rates{
+							{DateTime: timeFactory.At(11, 50), Price: 102.3},
+							{DateTime: timeFactory.At(11, 55), Price: 102.5},
+							{DateTime: timeFactory.At(12, 0), Price: 102.8},
+						},
 					},
 				},
 				expectedErr: nil,
 			},
+			"returns error when higher and lower timeframe symbols mismatch": {
+				higher: model.Market{
+					Symbol: model.Symbol(99),
+					Rates: model.Rates{
+						{DateTime: timeFactory.At(12, 0), Price: 102.8},
+					},
+				},
+				lower: model.Market{
+					Symbol: model.BTCUSD,
+					Rates: model.Rates{
+						{DateTime: timeFactory.At(12, 0), Price: 102.8},
+					},
+				},
+				expected:    nil,
+				expectedErr: errors.New("higher and lower time frame symbols must match"),
+			},
 			"returns error when higher timeframe rates is empty": {
-				symbol:      model.BTCUSD,
-				higherRates: model.Rates{},
-				lowerRates: model.Rates{
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 50), Price: 102.3},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 55), Price: 102.5},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+				higher: model.Market{Symbol: model.BTCUSD},
+				lower: model.Market{
+					Symbol: model.BTCUSD,
+					Rates: model.Rates{
+						{DateTime: timeFactory.At(11, 50), Price: 102.3},
+						{DateTime: timeFactory.At(11, 55), Price: 102.5},
+						{DateTime: timeFactory.At(12, 0), Price: 102.8},
+					},
 				},
 				expected:    nil,
 				expectedErr: errors.New("higher timeframe rates cannot be empty"),
 			},
 			"returns error when lower timeframe rates is empty": {
-				symbol: model.BTCUSD,
-				higherRates: model.Rates{
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(10, 0), Price: 102.1},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(11, 0), Price: 103.0},
-					{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+				higher: model.Market{
+					Symbol: model.BTCUSD,
+					Rates: model.Rates{
+						{DateTime: timeFactory.At(10, 0), Price: 102.1},
+						{DateTime: timeFactory.At(11, 0), Price: 103.0},
+						{DateTime: timeFactory.At(12, 0), Price: 102.8},
+					},
 				},
-				lowerRates:  model.Rates{},
+				lower:       model.Market{Symbol: model.BTCUSD},
 				expected:    nil,
 				expectedErr: errors.New("lower timeframe rates cannot be empty"),
 			},
@@ -74,7 +103,7 @@ func TestTrade(t *testing.T) {
 
 		for name, tt := range tests {
 			t.Run(name, func(t *testing.T) {
-				actual, err := model.NewTrade(tt.symbol, tt.higherRates, tt.lowerRates)
+				actual, err := model.NewTrade(tt.higher, tt.lower)
 
 				assert.Equal(t, tt.expected, actual)
 				if tt.expectedErr != nil {
@@ -100,11 +129,17 @@ func TestTrade(t *testing.T) {
 		for name, tt := range tests {
 			t.Run(name, func(t *testing.T) {
 				trade := &model.Trade{
-					HigherTimeFrameRates: model.Rates{
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+					HigherTimeFrame: model.Market{
+						Symbol: model.BTCUSD,
+						Rates: model.Rates{
+							{DateTime: timeFactory.At(12, 0), Price: 102.8},
+						},
 					},
-					LowerTimeFrameRates: model.Rates{
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+					LowerTimeFrame: model.Market{
+						Symbol: model.BTCUSD,
+						Rates: model.Rates{
+							{DateTime: timeFactory.At(12, 0), Price: 102.8},
+						},
 					},
 				}
 
@@ -148,13 +183,18 @@ func TestTrade(t *testing.T) {
 		for name, tt := range tests {
 			t.Run(name, func(t *testing.T) {
 				trade := &model.Trade{
-					Symbol: model.BTCUSD,
-					Side:   model.Buy,
-					HigherTimeFrameRates: model.Rates{
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+					Side: model.Buy,
+					HigherTimeFrame: model.Market{
+						Symbol: model.BTCUSD,
+						Rates: model.Rates{
+							{DateTime: timeFactory.At(12, 0), Price: 102.8},
+						},
 					},
-					LowerTimeFrameRates: model.Rates{
-						{Symbol: model.BTCUSD, DateTime: timeFactory.At(12, 0), Price: 102.8},
+					LowerTimeFrame: model.Market{
+						Symbol: model.BTCUSD,
+						Rates: model.Rates{
+							{DateTime: timeFactory.At(12, 0), Price: 102.8},
+						},
 					},
 					Quantity: 120,
 				}

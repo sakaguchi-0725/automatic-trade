@@ -6,25 +6,26 @@ import (
 )
 
 type Trade struct {
-	Symbol               Symbol
-	Side                 TradeSide
-	HigherTimeFrameRates Rates
-	LowerTimeFrameRates  Rates
-	Quantity             float64
+	Side            TradeSide
+	HigherTimeFrame Market
+	LowerTimeFrame  Market
+	Quantity        float64
 }
 
-func NewTrade(symbol Symbol, higherTimeFrameRates, lowerTimeFrameRates Rates) (*Trade, error) {
-	if len(higherTimeFrameRates) == 0 {
+func NewTrade(higherTimeFrame, lowerTimeFrame Market) (*Trade, error) {
+	if higherTimeFrame.Symbol != lowerTimeFrame.Symbol {
+		return nil, errors.New("higher and lower time frame symbols must match")
+	}
+	if len(higherTimeFrame.Rates) == 0 {
 		return nil, errors.New("higher timeframe rates cannot be empty")
 	}
-	if len(lowerTimeFrameRates) == 0 {
+	if len(lowerTimeFrame.Rates) == 0 {
 		return nil, errors.New("lower timeframe rates cannot be empty")
 	}
 
 	return &Trade{
-		Symbol:               symbol,
-		HigherTimeFrameRates: higherTimeFrameRates,
-		LowerTimeFrameRates:  lowerTimeFrameRates,
+		HigherTimeFrame: higherTimeFrame,
+		LowerTimeFrame:  lowerTimeFrame,
 	}, nil
 }
 
@@ -65,7 +66,7 @@ func (trade *Trade) MakePosition(execPrice float64) (Position, error) {
 		return Position{}, errors.New("invalid execution price")
 	}
 	return Position{
-		Symbol:      trade.Symbol,
+		Symbol:      trade.HigherTimeFrame.Symbol,
 		Side:        trade.Side,
 		Price:       execPrice,
 		OrderStatus: Open,
