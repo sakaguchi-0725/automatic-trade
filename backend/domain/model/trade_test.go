@@ -156,33 +156,13 @@ func TestTrade(t *testing.T) {
 		}
 	})
 
-	t.Run("make position", func(t *testing.T) {
+	t.Run("make order", func(t *testing.T) {
 		tests := map[string]struct {
-			execPrice   float64
-			expected    model.Position
-			expectedErr error
+			trade    model.Trade
+			expected model.Order
 		}{
-			"returns position on success": {
-				execPrice: 101.2,
-				expected: model.Position{
-					Symbol:      model.BTCUSD,
-					Side:        model.Buy,
-					Price:       101.2,
-					OrderStatus: model.Open,
-					Quantity:    120,
-				},
-				expectedErr: nil,
-			},
-			"returns error when invalid price": {
-				execPrice:   0,
-				expected:    model.Position{},
-				expectedErr: errors.New("invalid execution price"),
-			},
-		}
-
-		for name, tt := range tests {
-			t.Run(name, func(t *testing.T) {
-				trade := &model.Trade{
+			"returns model.Order on success": {
+				trade: model.Trade{
 					Side: model.Buy,
 					HigherTimeFrame: model.Market{
 						Symbol: model.BTCUSD,
@@ -197,17 +177,22 @@ func TestTrade(t *testing.T) {
 						},
 					},
 					Quantity: 120,
-				}
+				},
+				expected: model.Order{
+					ID:        "",
+					OrderType: model.MarketOrder,
+					Side:      model.Buy,
+					Symbol:    model.BTCUSD,
+					Quantity:  120,
+				},
+			},
+		}
 
-				actual, err := trade.MakePosition(tt.execPrice)
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				actual := tt.trade.MakeOrder()
 
 				assert.Equal(t, tt.expected, actual)
-				if tt.expectedErr != nil {
-					assert.Error(t, err)
-					assert.Equal(t, tt.expectedErr, err)
-				} else {
-					assert.NoError(t, err)
-				}
 			})
 		}
 	})

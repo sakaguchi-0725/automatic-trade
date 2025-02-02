@@ -61,17 +61,13 @@ func (trade *Trade) CalculateQuantity(totalWallet float64) error {
 	return nil
 }
 
-func (trade *Trade) MakePosition(execPrice float64) (Position, error) {
-	if execPrice <= 0 {
-		return Position{}, errors.New("invalid execution price")
+func (trade *Trade) MakeOrder() Order {
+	return Order{
+		OrderType: MarketOrder,
+		Side:      trade.Side,
+		Symbol:    trade.HigherTimeFrame.Symbol,
+		Quantity:  trade.Quantity,
 	}
-	return Position{
-		Symbol:      trade.HigherTimeFrame.Symbol,
-		Side:        trade.Side,
-		Price:       execPrice,
-		OrderStatus: Open,
-		Quantity:    trade.Quantity,
-	}, nil
 }
 
 func truncateToOneDecimal(value float64) float64 {
