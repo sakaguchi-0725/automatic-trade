@@ -6,8 +6,9 @@ import (
 )
 
 type Market struct {
-	Symbol Symbol
-	Rates  Rates
+	Symbol   Symbol
+	Interval Interval
+	Rates    Rates
 }
 
 type Rate struct {
