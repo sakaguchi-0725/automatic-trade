@@ -7,6 +7,10 @@ const (
 	Limit       OrderType = "limit"
 )
 
+func (ot OrderType) String() string {
+	return string(ot)
+}
+
 type Order struct {
 	ID        string
 	OrderType OrderType

@@ -34,8 +34,8 @@ func (o *orderRepository) Place(order *model.Order) error {
 	params := map[string]interface{}{
 		"category":  "inverse",
 		"symbol":    order.Symbol.String(),
-		"side":      order.Side,
-		"orderType": order.OrderType,
+		"side":      order.Side.String(),
+		"orderType": order.OrderType.String(),
 		"qty":       order.Quantity,
 	}
 
