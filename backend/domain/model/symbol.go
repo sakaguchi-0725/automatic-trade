@@ -1,5 +1,7 @@
 package model
 
+import "errors"
+
 type Symbol int
 
 const (
@@ -12,5 +14,14 @@ func (s Symbol) String() string {
 		return "BTCUSD"
 	default:
 		return "unknown"
+	}
+}
+
+func NewSymbolFromString(s string) (Symbol, error) {
+	switch s {
+	case "BTCUSD":
+		return BTCUSD, nil
+	default:
+		return 0, errors.New("unknown Symbol: " + s)
 	}
 }

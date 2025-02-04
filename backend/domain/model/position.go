@@ -7,7 +7,12 @@ const (
 	Close OrderStatus = "close"
 )
 
+func (status OrderStatus) String() string {
+	return string(status)
+}
+
 type Position struct {
+	OrderID     string
 	Symbol      Symbol
 	Side        TradeSide
 	Price       float64
