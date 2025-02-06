@@ -56,7 +56,7 @@ func TestPosition(t *testing.T) {
 			expected    model.Position
 			expectedErr error
 		}{
-			"returns model.Position on success": {
+			"returns model.Position when success": {
 				input: "order-1",
 				expected: model.Position{
 					OrderID:     "order-1",
@@ -108,6 +108,34 @@ func TestPosition(t *testing.T) {
 				actual, err := positionRepo.Get(tt.input)
 
 				assert.Equal(t, tt.expected, actual)
+				assert.Equal(t, tt.expectedErr, err)
+			})
+		}
+	})
+
+	t.Run("store", func(t *testing.T) {
+		defer cleanupTestDB()
+
+		tests := map[string]struct {
+			input       model.Position
+			expectedErr error
+		}{
+			"returns no error when success": {
+				input: model.Position{
+					OrderID:     "order-1",
+					Symbol:      model.BTCUSD,
+					Side:        model.Buy,
+					Price:       1000,
+					OrderStatus: model.Open,
+					Quantity:    200,
+				},
+				expectedErr: nil,
+			},
+		}
+
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				err := positionRepo.Store(tt.input)
 				assert.Equal(t, tt.expectedErr, err)
 			})
 		}
