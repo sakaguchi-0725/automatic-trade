@@ -1,9 +1,11 @@
 package persistence
 
 import (
+	"automatic-trade/backend/core/apperr"
 	"automatic-trade/backend/domain/model"
 	"automatic-trade/backend/domain/repository"
 	"automatic-trade/backend/infra/rdb/dto"
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -31,12 +33,15 @@ func (p *positionRepository) Get(orderID string) (model.Position, error) {
 
 	err := p.db.Where("order_id = ?", orderID).First(&position).Error
 	if err != nil {
-		return model.Position{}, nil
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.Position{}, apperr.ErrDataNotFound
+		}
+		return model.Position{}, err
 	}
 
 	result, err := position.ToModel()
 	if err != nil {
-		return model.Position{}, nil
+		return model.Position{}, err
 	}
 
 	return result, err

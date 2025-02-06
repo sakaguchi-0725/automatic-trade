@@ -1,6 +1,7 @@
 package persistence_test
 
 import (
+	"automatic-trade/backend/core/apperr"
 	"automatic-trade/backend/domain/model"
 	"automatic-trade/backend/infra/rdb/dto"
 	"automatic-trade/backend/infra/rdb/persistence"
@@ -31,7 +32,7 @@ func TestPosition(t *testing.T) {
 				Symbol:      model.BTCUSD.String(),
 				Side:        model.Buy.String(),
 				Price:       1002.2,
-				OrderStatus: model.MarketOrder.String(),
+				OrderStatus: model.Open.String(),
 				Quantity:    200,
 			}
 
@@ -42,6 +43,71 @@ func TestPosition(t *testing.T) {
 		for name, tt := range tests {
 			t.Run(name, func(t *testing.T) {
 				err := positionRepo.Delete(tt.input)
+				assert.Equal(t, tt.expectedErr, err)
+			})
+		}
+	})
+
+	t.Run("get", func(t *testing.T) {
+		defer cleanupTestDB()
+
+		tests := map[string]struct {
+			input       string
+			expected    model.Position
+			expectedErr error
+		}{
+			"returns model.Position on success": {
+				input: "order-1",
+				expected: model.Position{
+					OrderID:     "order-1",
+					Symbol:      model.BTCUSD,
+					Side:        model.Sell,
+					Price:       1000,
+					OrderStatus: model.Open,
+					Quantity:    300,
+				},
+				expectedErr: nil,
+			},
+			"returns error when not exists orderID": {
+				input:       "order-99",
+				expected:    model.Position{},
+				expectedErr: apperr.ErrDataNotFound,
+			},
+			"returns error when invalid data": {
+				input:       "order-2",
+				expected:    model.Position{},
+				expectedErr: errors.New("unknown Symbol: HOGE"),
+			},
+		}
+
+		t.Run("create position", func(t *testing.T) {
+			position := []dto.Position{
+				{
+					OrderID:     "order-1",
+					Symbol:      model.BTCUSD.String(),
+					Side:        model.Sell.String(),
+					Price:       1000,
+					OrderStatus: model.Open.String(),
+					Quantity:    300,
+				}, {
+					OrderID:     "order-2",
+					Symbol:      "HOGE", // invalid symbol
+					Side:        model.Sell.String(),
+					Price:       1000,
+					OrderStatus: model.Open.String(),
+					Quantity:    300,
+				},
+			}
+
+			err := testDB.Create(&position).Error
+			require.NoError(t, err)
+		})
+
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				actual, err := positionRepo.Get(tt.input)
+
+				assert.Equal(t, tt.expected, actual)
 				assert.Equal(t, tt.expectedErr, err)
 			})
 		}
