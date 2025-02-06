@@ -4,10 +4,10 @@ import "automatic-trade/backend/domain/model"
 
 type Position struct {
 	OrderID     string `gorm:"primaryKey"`
-	Symbol      string
-	Side        string `gorm:"type: enum('buy', 'sell'); not null"`
+	Symbol      string `gorm:"not null"`
+	Side        string `gorm:"not null"`
 	Price       float64
-	OrderStatus string  `gorm:"type: enum('open', 'close'); default: 'open'; not null"`
+	OrderStatus string  `gorm:"not null"`
 	Quantity    float64 `gorm:"not null"`
 }
 

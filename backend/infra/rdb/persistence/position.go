@@ -4,6 +4,7 @@ import (
 	"automatic-trade/backend/domain/model"
 	"automatic-trade/backend/domain/repository"
 	"automatic-trade/backend/infra/rdb/dto"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -13,9 +14,13 @@ type positionRepository struct {
 }
 
 func (p *positionRepository) Delete(orderID string) error {
-	err := p.db.Where("order_id = ?", orderID).Delete(&dto.Position{}).Error
-	if err != nil {
-		return err
+	result := p.db.Where("order_id = ?", orderID).Delete(&dto.Position{})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("position with orderID %s not found", orderID)
 	}
 
 	return nil
