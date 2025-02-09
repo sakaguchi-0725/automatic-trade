@@ -1,8 +1,7 @@
 package model
 
 import (
-	"errors"
-	"time"
+	"sort"
 )
 
 type Market struct {
@@ -11,24 +10,15 @@ type Market struct {
 	Rates    Rates
 }
 
-type Rate struct {
-	DateTime time.Time
-	Price    float64
+func (m *Market) Set(rates Rates) {
+	sort.Slice(rates, func(i, j int) bool {
+		return rates[i].DateTime.After(rates[j].DateTime)
+	})
+
+	m.Rates = rates
 }
 
-type Rates []Rate
-
-func (r Rates) Latest() (Rate, error) {
-	if len(r) == 0 {
-		return Rate{}, errors.New("no rates available")
-	}
-
-	latest := r[0]
-	for _, rate := range r {
-		if rate.DateTime.After(latest.DateTime) {
-			latest = rate
-		}
-	}
-
-	return latest, nil
+func (m *Market) Add(rate Rate) {
+	m.Rates = append(Rates{rate}, m.Rates...)
+	m.Rates = m.Rates[:len(m.Rates)-1]
 }
