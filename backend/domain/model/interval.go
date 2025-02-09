@@ -11,3 +11,7 @@ const (
 	Month Interval = "M"
 	Week  Interval = "W"
 )
+
+func (i Interval) String() string {
+	return string(i)
+}
